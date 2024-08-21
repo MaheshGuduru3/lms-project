@@ -27,7 +27,7 @@ const Footer = () => {
                                
                                     <h3 className='text-xl font-semibold'>About Us</h3>
                                     {/* <p>EduVantage Learning Solutions specializes in providing personalized online learning experiences for K-12 students. Their platform employs adaptive learning  curriculum content to each student's individual learning style and pace. They offer a comprehensive suite of interactive lessons, assessments, and progress tracking tools to help students excel academically.</p> */}
-                                     <p className='font-light'>lms portal , marathahalli , bangalore , 510021</p>
+                                     <p className='font-light'>lms portal , btm layout , bangalore , 560037</p>
                               
                               
                             </div>

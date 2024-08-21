@@ -1,4 +1,4 @@
-const { uploadVideos, getBatchInfo, getbatchUpdate, getbatchweekwise, batchAndCourseAdd, getBatchandCourseUpdateWeekwise, groupAllbatchs, getAllbatchNames, getAllWeekwiseinfo, allStudentsEachCourse, allBatchEachCourse } = require('../controllers/batchController')
+const { uploadVideos, getBatchInfo, getbatchUpdate, getbatchweekwise, batchAndCourseAdd, getBatchandCourseUpdateWeekwise, groupAllbatchs, getAllbatchNames, getAllWeekwiseinfo, allStudentsEachCourse, allBatchEachCourse, getBatchUpdateVideo } = require('../controllers/batchController')
 const { courseUserInfo, getOneCourseUser } = require('../controllers/courseControoller')
 const { handleHealth, userSignUp, userSignIn, verifyToken, verifyUser, logOutUser, totalStdAdm } = require('../controllers/userController')
 
@@ -22,6 +22,7 @@ route.get('/user/count' , totalStdAdm)
 route.post('/batch' , batchAndCourseAdd)
 route.get('/batch/:batch' , getBatchInfo)
 route.patch('/batch/:batch/:course/:weeksubno' , getbatchUpdate)
+route.patch('/batch/video/:batch/:course/:weeksubno' , getBatchUpdateVideo)
 route.post('/batch/weekwise' , getbatchweekwise)
 route.patch('/batch/weekwise/adm/:batch/:coursename' ,  getBatchandCourseUpdateWeekwise)
 route.get('/batch' , getAllbatchNames)
@@ -33,6 +34,8 @@ route.get('/batch/batchs/count' , allBatchEachCourse)
 
 route.post('/course' , courseUserInfo)
 route.get('/course/:email' , getOneCourseUser)
+
+
 
 
 module.exports = route

@@ -1,18 +1,22 @@
 import { useFormik } from 'formik'
 import React, { useState } from 'react'
-import { useGetBatchUpdatesLinkMutation, useGetWeekwiseScheduleMutation } from '../../../features/batch/batchApi'
+import { useGetBatchUpdatesLinkMutation, useGetBatchVideoUploadMutation, useGetWeekwiseScheduleMutation } from '../../../features/batch/batchApi'
 import { toast } from 'react-toastify'
+import axio from 'axios'
 
 const AdminSchedule = (data) => {
     const [weekschedule , { data:data1 }] = useGetWeekwiseScheduleMutation()
 
-    const [upload , setUpload] = useState(" ")
+    const [upload , setUpload] = useState("")
     const [zoom, setZoom] = useState(false) 
 
     const [link , setLink ] = useState('')
+    const [videoLink, setVideoLink] = useState([])
     const [week ,setWeek] = useState('')
 
    const [uploadLink] = useGetBatchUpdatesLinkMutation()
+   const [videoUpload] = useGetBatchVideoUploadMutation()
+
 
     const { values , handleChange,handleSubmit } = useFormik({
           initialValues:{
@@ -53,45 +57,59 @@ const AdminSchedule = (data) => {
       setWeek(weeksubno)
    }
   
-   console.log(link , "link")
-
    const finalUploadHandler = async (e)=>{  
          e.preventDefault()
           console.log("entered")
            
-          let data = link
+         if(upload === "zoomlink"){
+               const  data = {
+                  zoomlink : link, 
+               }
+               console.log(data)
+               const batch = data1?.data?.batch
+               const coursename = data1?.data?.coursename
+               const weeksubno = week
+               try{
+                     const result = await uploadLink({data , batch , coursename , weeksubno}).unwrap()
+                     console.log(result)
+               }
+               catch(err){
+               console.log(err)
+               }
+               finally {
+                  setZoom(false)
+                  setUpload("")
+                  setLink("")
+               }
+         }
+         if(upload === "recvideolink"){
 
-         //  if(link.type === 'video/mp4'){
-         //    data = {
-         //      recvideolink : link, 
-         //    }
-         //  }
-         //  else{
-         //    data = {
-         //       zoomlink : link, 
-         //    }
-         //  }
-          
-          
-           
-          
-         //  setZoom(false); setUpload(" ")
-        
-         console.log(data)
-         const batch = data1?.data?.batch
-         const coursename = data1?.data?.coursename
-         const weeksubno = week
-         try{
-                const result = await uploadLink({data , batch , coursename , weeksubno}).unwrap()
-                console.log(result)
+           if(videoLink){
+            
+            const formData = new FormData()
+
+            formData.append('file', videoLink)
+
+            for (let [key, value] of formData.entries()) {
+               console.log(key, value);
+            }
+      
+             const batch = data1?.data?.batch
+             const coursename = data1?.data?.coursename
+             const weeksubno = week
+             try{
+               const result = await videoUpload({formData , batch , coursename , weeksubno}).unwrap()
+               console.log(result)
+            }
+            catch(err){
+            console.log(err)
+            }
+            finally {
+               setZoom(false)
+               setUpload("")
+               setLink("")
+            }
          }
-         catch(err){
-           console.log(err)
-         }
-         finally {
-            setZoom(false)
-            setUpload(" ")
-            setLink(" ")
          }
    }
 
@@ -131,6 +149,7 @@ const AdminSchedule = (data) => {
              
         </div>
         <div className='w-[90%] flex flex-col gap-5 relative'>
+         
              <div className='font-extralight text-lg p-1'>
                 <h3>Scheduled session and Update zoom and recvideo Link</h3>
              </div>
@@ -155,7 +174,7 @@ const AdminSchedule = (data) => {
                                 <td>{i.topicname}</td>
                                 <td>{i.instructorname}</td>
                                 <td>{i.zoomlink === 'No link' ? <button className=' bg-neutral-300 p-1 px-2 text-white' onClick={ (e) => uploadLinkHandler(e , i.weeksubno)}>zoomlink</button> : <h4>Uploaded</h4>}</td>
-                                <td>{i.recvideolink === 'No video' && <button className='bg-neutral-300 p-1 px-2 text-white' onClick={(e) => uploadLinkHandler(e , i.weeksubno) }>recvideolink</button>}</td>
+                                <td>{i.recvideolink === 'No video' ? <button className='bg-neutral-300 p-1 px-2 text-white' onClick={(e) => uploadLinkHandler(e , i.weeksubno) }>recvideolink</button> : <h4>Uploaded</h4>}</td>
                                 <td>{i.status}</td>
                             </tr>
                          ))
@@ -164,7 +183,7 @@ const AdminSchedule = (data) => {
             </div>
 
             {
-                upload === "zoomlink" || "recvideolink" && zoom  ?
+                upload === "zoomlink" &&
                 <div className='w-full bg-white absolute flex justify-center'>
                      <div className='w-[20rem] shadow-lg p-4'>
                         <h3 className='text-lg font-extralight p-2'>{upload} upload</h3>
@@ -180,24 +199,45 @@ const AdminSchedule = (data) => {
                              <div className='flex flex-col'>
                                <label>Weeksubno</label>
                                <input type='text' placeholder='Enter Weeksubno'  name='weeksubno' value={week} readOnly/>
-                             </div>
-                             { upload === "zoomlink" ?  
+                             </div> 
                              <div className='flex flex-col'>
                                <label>{upload}</label>
                                <input type='text' placeholder='Enter Zoom link' name='zoomlink' onChange={(e)=>setLink(e.target.value)} />
                              </div>
-                            :
-                            <div>
-                                <label>{upload}</label>
-                                <input type='file' onChange={(e)=> setLink(e.target.files[0])} />
-                              </div>
-                            } 
+                          
                              <button className={link ?'bg-blue-500 p-1 px-3 text-white font-extralight italic':'hidden bg-blue-500 p-1 px-3 text-white font-extralight italic'}>Upload</button>
                         </form>
                      </div>
                 </div>
-                :
-                <></>
+             }
+             { upload === "recvideolink" &&
+                <div className='w-full bg-white absolute flex justify-center'>
+                <div className='w-[20rem] shadow-lg p-4'>
+                   <h3 className='text-lg font-extralight p-2'>{upload} upload</h3>
+                   <form className='flex flex-col gap-4' onSubmit={(e)=>finalUploadHandler(e)}> 
+                        <div className='flex flex-col'>
+                          <label>Batch</label>
+                          <input type='text' placeholder='Enter Batch' name='batch' value={data1?.data?.batch}  readOnly/>
+                        </div>
+                        <div className='flex flex-col'>
+                          <label>Coursename</label>
+                          <input type='text' placeholder='Enter Coursename' name='coursename' value={data1?.data?.coursename} readOnly />
+                        </div>
+                        <div className='flex flex-col'>
+                          <label>Weeksubno</label>
+                          <input type='text' placeholder='Enter Weeksubno'  name='weeksubno' value={week} readOnly/>
+                        </div> 
+                        <div className='flex flex-col'>
+                          <label>{upload}</label>
+                          <input type='file'   placeholder='Upload Video' name='videoupload' onChange={(e)=>{
+                                 console.log(e , e.target.files[0])
+                                 setVideoLink(e.target.files[0])
+                          }} />
+                        </div>
+                        <button className={videoLink ?'bg-blue-500 p-1 px-3 text-white font-extralight italic':'hidden bg-blue-500 p-1 px-3 text-white font-extralight italic'}>Upload</button>
+                   </form>
+                </div>
+             </div>
             }
         </div>
     </div>

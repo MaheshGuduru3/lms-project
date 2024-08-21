@@ -1,10 +1,25 @@
 const batchs = require('../schemas/batch/batchSchema')
 const asyncErrorHandler = require('../utils/errorHandler')
+const { S3Client , PutObjectCommand} = require('@aws-sdk/client-s3')
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner')
+const axio = require('axios')
+const fileUpload = require('express-fileupload')
+const app = require('express')()
+app.use(fileUpload())
+// amazon s3 for store the video in it
+
+const s3client = new S3Client({
+        // region:'ap-south-1',
+        credentials:{
+          
+        }
+})
+
 
 // the api is used in admin session
 const batchAndCourseAdd =  asyncErrorHandler( async (req,res)=>{
         const { batch , coursename , duration , startdate, enddate, mentorname , instructorname } = req.body
-
+  
         console.log(req.body )
         if(!batch || !coursename || !duration || !startdate || !enddate || !mentorname || !instructorname  ){
               return res.status(499).json({ message:"All fields are required." })
@@ -34,49 +49,71 @@ const getBatchInfo = asyncErrorHandler(async (req,res)=>{
          }
 })
 
-//  updation of batch for updating recording admin session
+//  updation of batch for updating recording zoomlink admin session
 const getbatchUpdate = asyncErrorHandler(async (req,res)=>{
        const { batch , course , weeksubno }  =  req.params
-       const  { zoomlink , recvideolink } = req.body
+       const  { zoomlink } = req.body
        console.log("req" , req.body)
-       if(zoomlink && !recvideolink){
-            // console.log(data)
+      
             if(!zoomlink){
                 return res.status(499).json({message:"required."})
             }
             const checking = await batchs.updateOne({ batch , coursename:course,   "weekwise.weeksubno":`${weeksubno}`  } ,{$set: { "weekwise.$.zoomlink": zoomlink }})
             if(checking){
-           
-                     return res.status(201).json( { message : "Updated Success." ,checking} )
-                
+                return res.status(201).json( { message : "Updated Success." ,checking} )
             }
             else{
-                  return res.status(404).json({ message : "Not Found."})
+                return res.status(404).json({ message : "Not Found."})
             }
-       }
+})
 
-       if(!zoomlink && recvideolink){
-        console.log(recvideolink, "console")
-        // if(!recvideolink){
-        //     return res.status(499).json({message:"required."})
-        // }
-        // const checking = await batchs.updateOne({ batch , coursename:course,   "weekwise.weeksubno":`${weeksubno}`  } ,{$set: { "weekwise.$.recvideolink": recvideolink }})
-        // if(checking){
+
+// updation of batch for updating uploading video admin session
+const getBatchUpdateVideo = asyncErrorHandler(async(req,res)=>{
+     
+  console.log( req.files , "cgfxfccgfcgh")
+      
+  
+    //   const { formData } = req.body
+    //   console.log(formData, "formadat")
+
+      const putCommand = new PutObjectCommand({
        
-        //          return res.status(201).json( { message : "Updated Success." ,checking} )
-            
-        // }
-        // else{
-        //       return res.status(404).json({ message : "Not Found."})
-        // }
-   }
-       else{
-          console.log("scjhsdcjhs")
-       }
-    })
+      })
+
+
+    //   const result = await getSignedUrl(s3client , putCommand)
+
+
+    //   console.log(result , "result")
+
+    //   try{
+    //     const resulted = await axio.put(result , JSON.stringify(formData) , {
+    //         headers:{
+    //          'Content-Type': 'multipart/form-data'
+    //         }
+    //       })
+
+    //       console.log("resulted", resulted)
+    //   }
+    //   catch(err){
+    //       console.log(err , "dhjcdhc")
+    //   }
+
+     
+
+
+  
+
+
+    //   return res.status(200).json({ message:"url sending.." , url : result})
+
+})
+
 
 
 //  uses in student session for getting live and recording
+
 const getbatchweekwise = asyncErrorHandler(async(req,res)=>{
        const { batch , weeksubno } = req.body
        console.log(batch  , weeksubno)
@@ -193,5 +230,6 @@ module.exports = {
        getAllbatchNames,
        getAllWeekwiseinfo,
        allStudentsEachCourse,
-       allBatchEachCourse
+       allBatchEachCourse,
+       getBatchUpdateVideo
 }

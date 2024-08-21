@@ -75,6 +75,15 @@ const batchApi = apiSlice.injectEndpoints({
                         body:{ data }
                   }),
                   invalidatesTags:['Batch']
+            }),
+
+            getBatchVideoUpload : builders.mutation({
+                   query: ({formData, batch , coursename , weeksubno})=>({
+                       url :`/batch/video/${batch}/${coursename}/${weeksubno}`,
+                       method: "PATCH",
+                       body : formData
+                   }),
+                  invalidatesTags : ['Batch']
             })
       })
 })   
@@ -88,8 +97,9 @@ export const { useGetCourseBatchNameQuery ,
                useGetWeekwiseScheduleMutation,
                useGetTotStudEachCourseQuery,
                useGetTotBatchEachCourseQuery,
-               useGetBatchUpdatesLinkMutation
-            
+               useGetBatchUpdatesLinkMutation,
+               useGetBatchVideoUploadMutation
+               
             
              } = batchApi
 
